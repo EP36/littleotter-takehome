@@ -4,6 +4,19 @@ import { useEffect, useState, useMemo } from 'react';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import ReactDatePicker from 'react-datepicker';
+import {
+  Chart as ChartJS,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar, Scatter } from 'react-chartjs-2';
+
+ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
+
+
 
 function App() {
   // for a selected day, show a simple snapshot of the following data:
@@ -11,6 +24,7 @@ function App() {
     // ii. average length of session
     // iii. average distance traveled by patient
     // iv. average age of patient
+  const [isLoading, setIsLoading] = useState(false);
   const [initialSessions, setInitialSessions] = useState([]);
   const [sessions, setSessions] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -18,14 +32,29 @@ function App() {
   const [avgLen, setAvglen] = useState(null);
   const [avgDistance, setAvgDistance] = useState(null);
   const [avgAge, setAvgAge] = useState(null);
+  const [durations, setDurations] = useState([]);
+  const [startTimes, setStartTimes] = useState([]);
+  const [endTimes, setEndTimes] = useState([]);
 
   const fetchData = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`https://lo-interview.s3.us-west-2.amazonaws.com/health_sessions.json`);
       const data = await response.json();
+      
       setInitialSessions(data);
+      
+      let dur = data.map((num) => num.distance);
+      let st = data.map((num) => num.start_time);
+      let et = data.map((num) => num.end_time);
+
+      setDurations(dur);
+      setStartTimes(st);
+      setEndTimes(et);
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
     }
   };
 
@@ -50,6 +79,10 @@ function App() {
   useEffect(() => {
     setSessions(filteredSessions);
   }, [selectedDate]);
+
+  useEffect(() => {
+    console.log(durations)
+  })
   
   const filteredSessions = useMemo(() => {
     // 86400000 is extra ms to next day
@@ -58,6 +91,7 @@ function App() {
 
   const calcAvgLen = (nums) => {
     const durations = nums.map((num) => num.sessionduration);
+    setDurations(durations);
     return durations.reduce((a, b) => (a + b)) / nums.length;
   };
 
@@ -69,6 +103,50 @@ function App() {
   const calcAvgAge = (nums) => {
     const ages = nums.filter((num) => num['birth year'] !== null).map((num) => 2023 - Number(num['birth year']));
     return ages.reduce((a, b) => (a + b)) / nums.length;
+  };
+
+  const durOptions = {
+    scales: {
+      y: {
+        beginAtZero: true
+      },
+    },
+  };
+
+  // i. distribution of session start time throughtout a 24 hour day
+  // ii. distribution of session end time throughtout a 24 hour day
+  // iii. distribution of session duration
+  const durData = {
+    labels: durations,
+    datasets: [
+      {
+        label: 'Distribution of session duration',
+        data: durations,
+        backgroundColor: 'rgba(255, 99, 132, 1)'
+      },
+    ],
+  };
+
+  const startTimeData = {
+    labels: startTimes,
+    datasets: [
+      {
+        label: 'Distribution of session start time',
+        data: startTimes,
+        // backgroundColor: 
+      }
+    ]
+  };
+
+  const endTimeData = {
+    labels: endTimes,
+    datasets: [
+      {
+        label: 'Distribution of session start time',
+        data: endTimes,
+        // backgroundColor: 
+      }
+    ]
   };
 
   return (
@@ -101,6 +179,9 @@ function App() {
           </TabPanel>
           <TabPanel>
             <h2>Any content 2</h2>
+            <Scatter options={durOptions} data={durData} />
+            {/* <Scatter options={durOptions} data={startTimeData} /> */}
+            {/* <Scatter options={durOptions} data={endTimeData} /> */}
           </TabPanel>
           <TabPanel>
             <h2>Any content 3</h2>
