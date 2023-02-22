@@ -34,7 +34,13 @@ function App() {
   }, []);
   
   useEffect(() => {
-    sessions.length > 0 ? setTotalSessions(sessions.length) : setTotalSessions(initialSessions.length);
+    if (sessions.length > 0) {
+      setTotalSessions(sessions.length);
+      setAvglen(calcAvgLen(sessions));
+    } else {
+      setTotalSessions(initialSessions.length);
+      setAvglen(calcAvgLen(initialSessions))
+    }
   }, [initialSessions, sessions])
   
   useEffect(() => {
@@ -43,9 +49,7 @@ function App() {
   }, [selectedDate])
   
   useEffect(() => {
-    console.log('selected date => ', selectedDate, new Date(selectedDate).getTime())
-    
-    console.log('initialSessions => ', initialSessions)
+    console.log('sessions => ', sessions)
   })
   
   const filteredSessions = useMemo(() => {
@@ -58,7 +62,13 @@ function App() {
   }
 
   const calcAvg = (nums, key) => {
-    return nums.reduce((a, b) => (a + b)) / nums.length;
+    return nums.reduce((a, b) => (a[key] + b[key])) / nums.length;
+  }
+
+  const calcAvgLen = (nums) => {
+    const durations = nums.map((num) => num.sessionduration)
+    console.log('durations', durations)
+    return durations.reduce((a, b) => (a + b)) / nums.length
   }
 
   return (
@@ -84,7 +94,7 @@ function App() {
             </div>
             <div className='overview-container'>
               <h3>Number of sessions: {totalSessions}</h3>
-              <h3>Average length of session: {avgLen}</h3>
+              <h3>Average length of session: {avgLen.toFixed(2)}</h3>
               <h3>Average distance traveled by patient: {avgDistance}</h3>
               <h3>Average age of patient: {avgAge}</h3>
             </div>
