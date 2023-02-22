@@ -37,39 +37,39 @@ function App() {
     if (sessions.length > 0) {
       setTotalSessions(sessions.length);
       setAvglen(calcAvgLen(sessions));
-    } else {
+      setAvgDistance(calcAvgDis(sessions));
+      setAvgAge(calcAvgAge(sessions));
+    } else if (initialSessions.length > 0) {
       setTotalSessions(initialSessions.length);
-      setAvglen(calcAvgLen(initialSessions))
+      setAvglen(calcAvgLen(initialSessions));
+      setAvgDistance(calcAvgDis(initialSessions));
+      setAvgAge(calcAvgAge(initialSessions));
     }
-  }, [initialSessions, sessions])
+  }, [initialSessions, sessions]);
   
   useEffect(() => {
-    console.log('hellllloooo', filteredSessions)
     setSessions(filteredSessions);
-  }, [selectedDate])
-  
-  useEffect(() => {
-    console.log('sessions => ', sessions)
-  })
+  }, [selectedDate]);
   
   const filteredSessions = useMemo(() => {
     // 86400000 is extra ms to next day
     return initialSessions.filter(session => new Date(session.start_time).getTime() >= new Date(selectedDate).getTime() && new Date(session.start_time).getTime() <= (new Date(selectedDate).getTime() + 86400000));
-  }, [sessions, selectedDate])
-
-  const calcSum = (nums, key) => {
-    return nums.reduce((partialSum, a) => partialSum + a[key], 0);
-  }
-
-  const calcAvg = (nums, key) => {
-    return nums.reduce((a, b) => (a[key] + b[key])) / nums.length;
-  }
+  }, [sessions, selectedDate]);
 
   const calcAvgLen = (nums) => {
-    const durations = nums.map((num) => num.sessionduration)
-    console.log('durations', durations)
-    return durations.reduce((a, b) => (a + b)) / nums.length
-  }
+    const durations = nums.map((num) => num.sessionduration);
+    return durations.reduce((a, b) => (a + b)) / nums.length;
+  };
+
+  const calcAvgDis = (nums) => {
+    const distances = nums.map((num) => num.distance);
+    return distances.reduce((a, b) => (a + b)) / nums.length;
+  };
+
+  const calcAvgAge = (nums) => {
+    const ages = nums.filter((num) => num['birth year'] !== null).map((num) => 2023 - Number(num['birth year']));
+    return ages.reduce((a, b) => (a + b)) / nums.length;
+  };
 
   return (
     <div className='App'>
@@ -94,9 +94,9 @@ function App() {
             </div>
             <div className='overview-container'>
               <h3>Number of sessions: {totalSessions}</h3>
-              <h3>Average length of session: {avgLen.toFixed(2)}</h3>
-              <h3>Average distance traveled by patient: {avgDistance}</h3>
-              <h3>Average age of patient: {avgAge}</h3>
+              <h3>Average length of session: {avgLen && avgLen.toFixed(2)}</h3>
+              <h3>Average distance traveled by patient: {avgDistance && avgDistance.toFixed(2)}</h3>
+              <h3>Average age of patient: {avgAge && avgAge.toFixed()}</h3>
             </div>
           </TabPanel>
           <TabPanel>
