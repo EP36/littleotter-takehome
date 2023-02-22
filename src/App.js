@@ -6,10 +6,18 @@ import 'react-tabs/style/react-tabs.css';
 import ReactDatePicker from 'react-datepicker';
 
 function App() {
-  const [selectedDate, setSelectedDate] = useState(null);
+  // for a selected day, show a simple snapshot of the following data:
+    // i. number of sessions
+    // ii. average length of session
+    // iii. average distance traveled by patient
+    // iv. average age of patient
   const [initialSessions, setInitialSessions] = useState([]);
   const [sessions, setSessions] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
   const [totalSessions, setTotalSessions] = useState(null);
+  const [avgLen, setAvglen] = useState(null);
+  const [avgDistance, setAvgDistance] = useState(null);
+  const [avgAge, setAvgAge] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -37,7 +45,7 @@ function App() {
   useEffect(() => {
     console.log('selected date => ', selectedDate, new Date(selectedDate).getTime())
     
-    console.log('sessions => ', sessions)
+    console.log('initialSessions => ', initialSessions)
   })
   
   const filteredSessions = useMemo(() => {
@@ -52,15 +60,6 @@ function App() {
   const calcAvg = (nums, key) => {
     return nums.reduce((a, b) => (a + b)) / nums.length;
   }
-
-  // for a selected day, show a simple snapshot of the following data:
-    // i. number of sessions
-    // ii. average length of session
-    // iii. average distance traveled by patient
-    // iv. average age of patient
-
-
-  // filter data by selected day by having start_time < selectedDate OR stop_time < selectedDate + 1
 
   return (
     <div className='App'>
@@ -85,9 +84,9 @@ function App() {
             </div>
             <div className='overview-container'>
               <h3>Number of sessions: {totalSessions}</h3>
-              <h3>Average length of session: </h3>
-              <h3>Average distance traveled by patient: </h3>
-              <h3>Average age of patient: </h3>
+              <h3>Average length of session: {avgLen}</h3>
+              <h3>Average distance traveled by patient: {avgDistance}</h3>
+              <h3>Average age of patient: {avgAge}</h3>
             </div>
           </TabPanel>
           <TabPanel>
